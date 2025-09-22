@@ -1,0 +1,50 @@
+# FastAPI and web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Database
+sqlalchemy[asyncio]==2.0.23
+asyncpg==0.29.0
+alembic==1.12.1
+
+# Pydantic for data validation
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Google Cloud and Vertex AI
+google-cloud-aiplatform==1.49.0
+vertexai==1.49.0
+google-auth==2.23.4
+google-cloud-storage==2.10.0
+#google-cloud-secretmanager==2.16.0
+firebase-admin==6.2.0
+
+# Vector database
+chromadb==0.4.18
+
+# Document processing
+pdfplumber==0.10.3
+pandas==2.1.4
+openpyxl==3.1.2
+
+# OCR for image-based PDFs
+pytesseract==0.3.10
+Pillow==10.1.0
+pdf2image==1.16.3
+
+# PDF generation
+reportlab
+weasyprint==61.2
+pydyf==0.10.0
+
+# Utilities
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+aiohttp==3.9.1
+
+# Development and testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+jinja2==3.1.2 

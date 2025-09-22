@@ -1,0 +1,114 @@
+[
+    {
+        "section_title": "Company Header",
+        "prompt": "Create a clean header with company information. Return ONLY valid JSON with these fields: {\n  \"Company Name\": \"[Company legal name as written]\",\n  \"Company Location\": \"[Headquarters city/state/country if available]\",\n  \"Leadership/Executive Team\": \"[Executive names and titles if available]\",\n  \"Discussion Date\": \"Not available in CIM\",\n  \"Company Founding Date\": \"[Founding/incorporation year if available]\"\n}\nGuidance: Extract facts from documents only; if not present, write 'Not available in CIM'.",
+        "context_strategy": "company_info",
+        "output_format": "json",
+        "max_tokens": 300,
+        "temperature": 0.1,
+        "priority_categories": ["CIM", "General Document"],
+        "requires_financial_data": false
+    },
+    {
+        "section_title": "SFE Bio",
+        "prompt": "",
+        "context_strategy": "none",
+        "output_format": "text",
+        "max_tokens": 0,
+        "temperature": 0.0,
+        "priority_categories": ["Leadership", "Executive"],
+        "requires_financial_data": false,
+        "requires_web_search": true
+    },
+    {
+        "section_title": "Description of the business as told to a 12-year old",
+        "prompt": "Write a paragraph that explains what this company does in simple terms a high school student would understand. Add some quick context about how the business differentiates itself from competitors. Do not mention competitors, but do mention the business's strengths.\n\nParagraph 1 (2-3 sentences): What problem they solve and who they help. Use concrete examples and avoid talking about feelings.\nParagraph 2 (2-3 sentences): How they make money and what makes them special or different.\n\nUse the company's actual name and mention specific products/services by their real names. Keep language simple - avoid technical jargon, but use key terms that are important to the business.\n\n \n\nAvoid vague or emotional marketing language, you should stick to the facts. \nIMPORTANT: Avoid run on sentences. This should be easy to read and understand.",
+        "context_strategy": "business_overview",
+        "output_format": "text",
+        "max_tokens": 200,
+        "temperature": 0.2,
+        "priority_categories": ["CIM", "Business Plan"],
+        "requires_financial_data": false
+    },
+    {
+        "section_title": "Sources and Uses",
+        "prompt": "",
+        "context_strategy": "none",
+        "output_format": "text",
+        "max_tokens": 0,
+        "temperature": 0.0,
+        "priority_categories": [],
+        "requires_financial_data": false
+    },
+    {
+        "section_title": "What happens operationally",
+        "prompt": "Describe the company's end-to-end workflow in numbered steps that show how they operate from start to finish. It should be an outsider's perspective, like how I would describe it to a stranger.",
+        "context_strategy": "operational",
+        "output_format": "markdown",
+        "max_tokens": 600,
+        "temperature": 0.3,
+        "priority_categories": ["CIM", "Business Plan", "Operations Manual"],
+        "requires_financial_data": false
+    },
+    {
+        "section_title": "Three year historical P&L and Balance Sheet, updated to within the last 45 days",
+        "prompt": "",
+        "context_strategy": "none",
+        "output_format": "text",
+        "max_tokens": 100,
+        "temperature": 0.0,
+        "priority_categories": [],
+        "requires_financial_data": false
+    },
+    {
+        "section_title": "Wisdom of the Crowd",
+        "prompt": "",
+        "context_strategy": "none",
+        "output_format": "text",
+        "max_tokens": 0,
+        "temperature": 0.0,
+        "priority_categories": [],
+        "requires_financial_data": false
+    },
+    {
+        "section_title": "Operational Assessment (Redacted)",
+        "prompt": "Provide a concise operational overview using only document facts. Use simple markdown bullets for: Employees, Locations, Product/Service, Operational Steps. Avoid proprietary scoring rubrics. For metrics not supported by documents, write 'Not located in CIM'. End with two lines: 'View on revenue growth: see above' and 'View on switching cost/sticky: see above'.",
+        "context_strategy": "operational",
+        "output_format": "markdown",
+        "max_tokens": 1200,
+        "temperature": 0.3,
+        "priority_categories": ["CIM", "Business Plan", "Financial Statement"],
+        "requires_financial_data": true,
+        "extract_specific_metrics": ["employee_count", "locations", "revenue_growth", "market_share"]
+    },
+    {
+        "section_title": "OFCF and where appropriate SSNOCF",
+        "prompt": "",
+        "context_strategy": "none",
+        "output_format": "text",
+        "max_tokens": 0,
+        "temperature": 0.0,
+        "priority_categories": [],
+        "requires_financial_data": false
+    },
+    {
+        "section_title": "Organization Chart",
+        "prompt": "",
+        "context_strategy": "none",
+        "output_format": "text",
+        "max_tokens": 0,
+        "temperature": 0.0,
+        "priority_categories": [],
+        "requires_financial_data": false
+    },
+    {
+        "section_title": "Other Considerations",
+        "prompt": "What are the most important strategic opportunities and risk factors for potential investors?  Format as bullet points using this EXACT structure:\n\n• **[Risk/Opportunity Name]**: [Maximum 3 sentences explaining the factor and its impact]\n• **[Risk/Opportunity Name]**: [Maximum 3 sentences explaining the factor and its impact]\n• **[Risk/Opportunity Name]**: [Maximum 3 sentences explaining the factor and its impact]\n• **[Risk/Opportunity Name]**: [Maximum 3 sentences explaining the factor and its impact]\n Reference specific numbers when needed for your justification, but don’t overdo the technical/financial jargon. Be clear and punchy, and get the important points across. Include topics that likely would not be covered in an operational complexity assessment or industry revenue growth assessment (e.g. regulatory, technology dependencies, market dynamics). Use those examples as a reference, you do not need to include all or any of them if they are not relevant to the company.",
+        "context_strategy": "general",
+        "output_format": "markdown",
+        "max_tokens": 1200,
+        "temperature": 0.4,
+        "priority_categories": ["CIM", "Business Plan", "General Document"],
+        "requires_financial_data": false
+    }
+]

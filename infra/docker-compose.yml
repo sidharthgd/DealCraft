@@ -1,0 +1,150 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: dealcraft-postgres
+    environment:
+      POSTGRES_DB: dealcraft
+      POSTGRES_USER: dealcraft
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - dealcraft-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dealcraft"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.backend
+    container_name: dealcraft-backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8080 --reload --reload-dir /app --timeout-keep-alive 1800
+    # Run as root in local dev so mounted volumes are writable
+    user: "0:0"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://dealcraft:${POSTGRES_PASSWORD:-}@postgres:5432/dealcraft
+      
+      # Google Cloud Platform
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      # Add GOOGLE_CLOUD_PROJECT for compatibility with Google libraries
+      GOOGLE_CLOUD_PROJECT: ${GCP_PROJECT_ID}
+      GCP_REGION: ${GCP_REGION:-us-central1}
+      # Explicit ADC path so Firebase Admin can initialize locally
+      GCS_CREDENTIALS_PATH: /root/.config/gcloud/application_default_credentials.json
+      # For local development, we'll rely on the fallback mode or provide explicit credentials
+      # GOOGLE_APPLICATION_CREDENTIALS: /root/.config/gcloud/application_default_credentials.json
+      
+      # Vertex AI
+      VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION:-us-central1}
+      VERTEX_AI_MODEL: ${VERTEX_AI_MODEL:-gemini-2.5-flash}
+      VERTEX_AI_EMBEDDING_MODEL: ${VERTEX_AI_EMBEDDING_MODEL:-text-embedding-004}
+      
+      # Vector Search (optional)
+      VERTEX_VECTOR_INDEX_ENDPOINT: ${VERTEX_VECTOR_INDEX_ENDPOINT:-}
+      VERTEX_VECTOR_INDEX_ID: ${VERTEX_VECTOR_INDEX_ID:-}
+      
+      # Legacy/Fallback
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CHROMA_PATH: /app/chroma
+      UPLOAD_PATH: /app/uploads
+      
+      # ChromaDB settings
+      ANONYMIZED_TELEMETRY: "false"
+      CHROMA_CLIENT_AUTH_PROVIDER: ""
+      CHROMA_SERVER_AUTH_PROVIDER: ""
+      
+      # Firebase Authentication (use env vars; no hardcoded keys)
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-your-firebase-project-id}
+      FIREBASE_WEB_API_KEY: ${FIREBASE_WEB_API_KEY:-}
+      
+      # Other settings
+      SECRET_KEY: ${SECRET_KEY:-}
+      CHROMA_PERSIST_DIRECTORY: /app/chroma
+      UPLOAD_DIR: /app/uploads
+      # Google Cloud Storage bucket for ChromaDB persistence (production only)
+      CHROMA_GCS_BUCKET: ${CHROMA_GCS_BUCKET:-dealcraft-chroma-persistence}
+      # Local development auth fallback (do NOT enable in production)
+      ALLOW_AUTH_FALLBACK: "true"
+    volumes:
+      - ../backend:/app
+      - chroma_data:/app/chroma
+      - upload_data:/app/uploads
+      - logs_data:/app/logs
+      # Mount GCP credentials from your local machine
+      - ~/.config/gcloud:/root/.config/gcloud:ro
+    ports:
+      - "8000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dealcraft-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend  
+  frontend:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.frontend.dev
+    container_name: dealcraft-frontend
+    environment:
+      # Next.js environment variables for local development
+      NEXT_PUBLIC_API_URL: http://backend:8080
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY:-}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:-your-project.firebaseapp.com}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID:-your-firebase-project-id}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:-your-firebase-project-id.appspot.com}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:-}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID:-}
+    volumes:
+      # Mount source code for hot reload during development
+      - ../frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - dealcraft-network
+    restart: unless-stopped
+
+  # Redis (optional - for caching and background tasks)
+  redis:
+    image: redis:7-alpine
+    container_name: dealcraft-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dealcraft-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  chroma_data:
+    driver: local
+  upload_data:
+    driver: local
+  redis_data:
+    driver: local
+  logs_data:
+    driver: local
+
+networks:
+  dealcraft-network:
+    driver: bridge 
